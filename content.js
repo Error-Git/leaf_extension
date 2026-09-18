@@ -111,7 +111,7 @@ function create_Random_Leaf(leaf_Number) {
 
     const img = document.createElement("img");
     img.className = `leaf-img-${leaf_Number}`;
-    img.src = "assets/leaf.png";
+    img.src = "https://i.postimg.cc/K8pgn0hD/leaf.png";
     img.alt = "";
 
     container.appendChild(img);
