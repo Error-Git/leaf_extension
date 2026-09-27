@@ -1,0 +1,15 @@
+
+
+
+Simple idea behind future leafAmount set by user:
+
+// Save
+chrome.storage.local.set({ leavesEnabled: true, leafAmount: 20 });
+
+// Load
+chrome.storage.local.get(["leavesEnabled", "leafAmount"], (result) => {
+  console.log(result.leavesEnabled); // true
+  console.log(result.leafAmount);    // 20
+});
+
+The rest with js...?
