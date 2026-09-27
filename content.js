@@ -1,7 +1,7 @@
 const animation_Duration = 10;
 const leaf_Amount = 15;
-
-
+let activeContainers = [];
+let is_Generating = false;
 
 function initialize_Leaf_Style_CSS(seed) {
 
@@ -74,32 +74,8 @@ function initialize_Leaf_Style_CSS(seed) {
     `;
 
     document.body.appendChild(created_Style_Tag);
+    activeContainers.push(created_Style_Tag);
 }
-
-
-
-
-
-
-
-/*
-function create_Random_Leaf(leaf_Number) {
-
-
-
-    initialize_Leaf_Style_CSS(leaf_Number);
-
-    const leafHTML = `
-            <div class="leaf-container-${leaf_Number}">
-                <img class="leaf-img-${leaf_Number}" src="assets/leaf.png" alt="">
-            </div>
-        `;
-
-    document.body.innerHTML += leafHTML;
-
-}
-    */
-
 
 
 
@@ -116,6 +92,7 @@ function create_Random_Leaf(leaf_Number) {
 
     container.appendChild(img);
     document.body.appendChild(container);
+    activeContainers.push(container);
 }
 
 
@@ -125,11 +102,41 @@ function sleep(ms) {
 
 
 async function generate_Leaves(leaf_count) {
+    is_Generating = true;
 
     for (let i = 0; i < leaf_count; i++) {
+        if (!is_Generating) {
+            break;
+        }
         create_Random_Leaf(i);
         await sleep((animation_Duration * 1000) / leaf_count);
     }
 }
 
-generate_Leaves(leaf_Amount);
+function remove_Leaves() {
+    is_Generating = false;
+    activeContainers.forEach((element) => {
+        element.remove()
+    });
+    activeContainers = [];
+}
+
+
+
+
+
+chrome.storage.local.get(["leavesEnabled"], (result) => {
+    if (result.leavesEnabled !== false) {
+        generate_Leaves(leaf_Amount);
+    }
+});
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === "local" && changes.leavesEnabled) {
+        if (changes.leavesEnabled.newValue) {
+            generate_Leaves(leaf_Amount);
+        } else {
+            remove_Leaves();
+        }
+    }
+});
