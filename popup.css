@@ -1,0 +1,12 @@
+body {
+    width: 160px;
+    padding: 10px;
+    font-family: sans-serif;
+}
+
+label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
