@@ -27,15 +27,15 @@ generate_leaves_toggle.addEventListener("change", () => {
 
 
 chrome.storage.local.get(["leaves_enabled", "leaf_amount", "leaf_container_rotation"], result => {
-    if (result.leaves_enabled !== false) {
+    if (result.leaves_enabled !== undefined) {
         generate_leaves_toggle.checked = result.leaves_enabled;
     }
 
-    if (result.leaf_amount !== false) {
+    if (result.leaf_amount !== undefined) {
         leaf_amount_input.value = result.leaf_amount;
     }
 
-    if (result.leaf_container_rotation !== false) {
+    if (result.leaf_container_rotation !== undefined) {
         degrees_update_value(result.leaf_container_rotation);
     }
 });

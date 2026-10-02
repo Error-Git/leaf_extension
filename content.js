@@ -81,16 +81,16 @@ function initialize() {
 
 function initialize_from_chrome_storage() {
     chrome.storage.local.get(["leaves_enabled", "leaf_amount", "leaf_container_rotation"], result => {
-        if (result.leaves_enabled !== false) {
-            if (result.leaf_amount !== false) {
-                leaf_amount = result.leaf_amount;
+        if (result.leaves_enabled !== undefined || result.leaves_enabled !== false) {
+            if (result.leaf_amount !== undefined || result.leaf_amount !== undefined) {
+                leaf_amount = result.leaf_amount || leaf_amount;
                 generate_leaves(leaf_amount);
             } else {
                 generate_leaves();
             }
         }
 
-        if (result.leaf_container_rotation !== false) {
+        if (result.leaf_container_rotation !== undefined || result.leaf_container_rotation !== false) {
             const leaf_container = document.getElementById(leaf_container_id);
             leaf_container.style.transform = `rotate(${leaf_container_rotation}deg)`;
         }
@@ -184,7 +184,7 @@ chrome.storage.onChanged.addEventListener((changes, namespace) => {
 
         if (changes.leaf_container_rotation) {
             const leaf_container = document.getElementById(leaf_container_id);
-            leaf_container.style.transform = `rotate(${leaf_container_rotation}deg)`;
+            leaf_container.style.transform = `rotate(${changes.leaf_container_rotation.newValue}deg)`;
         }
     }
 });
