@@ -92,7 +92,7 @@ function initialize_from_chrome_storage() {
 
         if (result.leaf_container_rotation !== undefined || result.leaf_container_rotation !== false) {
             const leaf_container = document.getElementById(leaf_container_id);
-            leaf_container.style.transform = `rotate(${leaf_container_rotation}deg)`;
+            leaf_container.style.transform = `rotate(${result.leaf_container_rotation}deg)`;
         }
     });
 }
