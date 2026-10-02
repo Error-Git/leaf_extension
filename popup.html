@@ -1,24 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> | Leaf Extension | </title>
     <link rel="stylesheet" href="popup.css">
 </head>
 
 <body>
-    <label>
-        <input type="checkbox" id="toggleLeaves">
-        Leaves?
-    </label>
+
+    <h1> | Leaf Extension | </h1>
 
     <hr>
+    | Generate leaves:
+    <input id="generate-leaves-toggle" type="checkbox">
 
-    Amount of leaves:
-    <input id="quantity" type="number" min="1" max="50" value="15">
-    <button id="leafQuantityBtn">ok</button>
+    <hr>
+    | Leaf amount:
+    <input id="leaf-amount" type="number" min="0" max="1000" value="20">
+
+    <hr>
+    | Leaf falling angle:
+    <input id="degrees-text" type="number" min="-180" max="180" value="0"><br>
+    <input id="degrees-slider" type="range" min="-180" max="180" value="0">
 
     <script src="popup.js"></script>
+
 </body>
 
 </html>

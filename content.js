@@ -1,99 +1,18 @@
-const animation_Duration = 10;
-const leaf_Amount = 15;
-let activeContainers = [];
-let is_Generating = false;
+// Constant vars:
+const unique_appendix = "897458249234616"; //used to make sure no duplicate names exist on the loaded page
+const leaf_container_id = `leaf-container-${unique_appendix}`;
+const leaf_classes = {
+    "leaf": `leaf-${unique_appendix}`,
+    "leaf_animation": `leaf-animation-${unique_appendix}`,
+    "leaf_pixalated": `leaf-pixalated-${unique_appendix}`,
+};
+const leaf_animation_name = `leaf-animation-${unique_appendix}`;
+const leaf_img_pathway = "https://i.postimg.cc/K8pgn0hD/leaf.png";
 
-function initialize_Leaf_Style_CSS(seed) {
+// Dynamic vars:
+let is_generating = false;
+let leaf_amount = 20;
 
-    const original_Leaf_Image_Size = {
-        width: 96,
-        height: 96
-    }
-    const leaf_Image_Size_Random_Modifier = Math.floor(Math.random() * 32) - 16
-    const leaf_Image_Size = {
-        width: original_Leaf_Image_Size.width + leaf_Image_Size_Random_Modifier,
-        height: original_Leaf_Image_Size.height + leaf_Image_Size_Random_Modifier
-    }
-
-    const dyFrom = -(Math.floor(Math.random() * 50) + 50);
-    const dyTo = 100;
-    const dxFrom = Math.floor(Math.random() * 140) - 100;
-    const dxTo = dxFrom + Math.floor(Math.random() * 30) + 100;
-
-    const randomRotation = Math.floor(Math.random() * 300) - 150
-
-    const animation_Timing_Function_List = [
-        "linear",
-        "ease",
-        "ease-in",
-        "ease-out",
-        "ease-in-out",
-    ]
-    // ${animation_timing_function_List[Math.random() * animation_timing_function_List.length | 0]}
-
-    var created_Style_Tag = document.createElement("style");
-    created_Style_Tag.textContent = `
-    @keyframes falling_Leaf${seed} {
-        from {
-            top: ${dyFrom}vh;
-            left: ${dxFrom}vw;
-            transform: rotate(0deg);
-        }
-
-        to {
-            top: ${dyTo}vh;
-            left: ${dxTo}vw;
-            transform: rotate(${randomRotation}deg);
-        }
-    }
-
-    .leaf-img-${seed} {
-    transform: rotate(${randomRotation / 2}deg);
-        width: ${leaf_Image_Size.width}px;
-        height: ${leaf_Image_Size.height}px;
-        position: absolute;
-        animation-name: falling_Leaf${seed};
-        animation-duration: ${animation_Duration + (Math.floor(Math.random() * 2) - 1)}s;
-        animation-iteration-count: infinite;
-        animation-timing-function: ${animation_Timing_Function_List[0]};
-        image-rendering: pixelated;
-        image-rendering: -moz-crisp-edges;
-        image-rendering: crisp-edges;
-    }
-
-    .leaf-container-${seed} {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100vh;
-        overflow: hidden;
-        pointer-events: none;
-        z-index: 999;
-    }
-    `;
-
-    document.body.appendChild(created_Style_Tag);
-    activeContainers.push(created_Style_Tag);
-}
-
-
-
-function create_Random_Leaf(leaf_Number) {
-    initialize_Leaf_Style_CSS(leaf_Number);
-
-    const container = document.createElement("div");
-    container.className = `leaf-container-${leaf_Number}`;
-
-    const img = document.createElement("img");
-    img.className = `leaf-img-${leaf_Number}`;
-    img.src = "https://i.postimg.cc/K8pgn0hD/leaf.png";
-    img.alt = "";
-
-    container.appendChild(img);
-    document.body.appendChild(container);
-    activeContainers.push(container);
-}
 
 
 function sleep(ms) {
@@ -101,42 +20,173 @@ function sleep(ms) {
 }
 
 
-async function generate_Leaves(leaf_count) {
-    is_Generating = true;
+function initialize() {
+    // || Leaf container:
+    const leaf_container = document.createElement("div");
+    leaf_container.id = leaf_container_id;
 
-    for (let i = 0; i < leaf_count; i++) {
-        if (!is_Generating) {
+    const leaf_container_style = document.createElement("style");
+    leaf_container_style.textContent = `
+        div#${leaf_container_id} {
+            position: fixed;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 999;
+            background-color: rgba(0, 128, 0, 0.347);
+        }
+    `;
+
+    document.body.appendChild(leaf_container);
+    document.body.appendChild(leaf_container_style);
+    rescale_and_position_leaf_container();
+
+
+    // || Leaf img style:
+    const leaf_style = document.createElement("style");
+    leaf_style.textContent = `
+        img.${leaf_classes.leaf} {
+            position: absolute;
+        }
+
+        img.${leaf_classes.leaf_animation} {
+            animation-name: ${leaf_animation_name};
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+        }
+
+        img.${leaf_classes.leaf_pixalated} {
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        @keyframes ${leaf_animation_name} {
+            from {
+                top: 0;
+                transform: translateY(-100%) translateX(-50%) rotate(0deg);
+            }
+
+            to {
+                top: 100%;
+                transform: translateX(-50%) rotate(40deg);
+            }
+        }
+    `;
+
+    document.head.appendChild(leaf_style);
+
+    initialize_from_chrome_storage();
+}
+
+
+function initialize_from_chrome_storage() {
+    chrome.storage.local.get(["leaves_enabled", "leaf_amount", "leaf_container_rotation"], result => {
+        if (result.leaves_enabled !== false) {
+            if (result.leaf_amount !== false) {
+                leaf_amount = result.leaf_amount;
+                generate_leaves(leaf_amount);
+            } else {
+                generate_leaves();
+            }
+        }
+
+        if (result.leaf_container_rotation !== false) {
+            const leaf_container = document.getElementById(leaf_container_id);
+            leaf_container.style.transform = `rotate(${leaf_container_rotation}deg)`;
+        }
+    });
+}
+
+
+function get_window_hypotenuse() {
+    const height = window.innerHeight;
+    const width = window.innerWidth;
+    const hypotenuse = Math.hypot(height, width);
+    return Math.ceil(hypotenuse);
+}
+
+
+function rescale_and_position_leaf_container() {
+    const leaf_container = document.getElementById(leaf_container_id);
+
+    const hypotenuse = get_window_hypotenuse();
+    leaf_container.style.height = `${hypotenuse}px`;
+    leaf_container.style.width = `${hypotenuse}px`;
+
+    const top_alignment = -(Math.ceil(((hypotenuse - window.innerHeight) / 2)));
+    const left_alignment = -(Math.ceil(((hypotenuse - window.innerWidth) / 2)));
+    leaf_container.style.top = `${top_alignment}px`;
+    leaf_container.style.left = `${left_alignment}px`;
+}
+
+
+function generate_leaf(leaf_count, left_alignment, animation_duration) {
+    const leaf_id = `leaf-unique-${leaf_count}-${unique_appendix}`
+
+    //HTML:
+    const leaf = document.createElement("img");
+    leaf.id = leaf_id;
+    Object.values(leaf_classes).forEach(leaf_class => {
+        leaf.className += `${leaf_class} `;
+    });
+    leaf.src = leaf_img_pathway;
+    leaf.alt = "";
+
+    leaf.style.left = `${left_alignment}%`;
+    leaf.style.animationDuration = `${animation_duration}s`;
+    leaf.style.transform = "translateX(-50%)";
+
+    const leaf_container = document.getElementById(leaf_container_id);
+    leaf_container.appendChild(leaf);
+}
+
+async function generate_leaves(leaf_amount_par = leaf_amount) {
+    is_generating = true;
+
+    for (let i = 1; i <= leaf_amount_par; i++) {
+        if (is_generating === false) {
             break;
         }
-        create_Random_Leaf(i);
-        await sleep((animation_Duration * 1000) / leaf_count);
+
+        const left_alignment = Math.floor(Math.random() * 101);
+        const animation_duration = (12 + (Math.random() * 4));
+        generate_leaf(i, left_alignment, animation_duration);
+        await sleep((animation_duration * 1000) / leaf_amount_par);
     }
+
+    is_generating = false;
 }
 
-function remove_Leaves() {
-    is_Generating = false;
-    activeContainers.forEach((element) => {
-        element.remove()
-    });
-    activeContainers = [];
+function remove_leaves() {
+    is_generating = false;
+    const leaf_container = document.getElementById(leaf_container_id);
+    leaf_container.innerHTML = "";
 }
 
 
+initialize();
 
 
 
-chrome.storage.local.get(["leavesEnabled"], (result) => {
-    if (result.leavesEnabled !== false) {
-        generate_Leaves(leaf_Amount);
-    }
-});
-
-chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === "local" && changes.leavesEnabled) {
-        if (changes.leavesEnabled.newValue) {
-            generate_Leaves(leaf_Amount);
+chrome.storage.onChanged.addEventListener((changes, namespace) => {
+    if (namespace === "local") {
+        if (changes.leaves_enabled && changes.leaves_enabled.newValue) {
+            generate_leaves(leaf_amount);
         } else {
-            remove_Leaves();
+            remove_leaves();
+        }
+
+        if (changes.leaf_amount) {
+            leaf_amount = changes.leaf_amount.newValue;
+            remove_leaves();
+            generate_leaves(leaf_amount);
+        }
+
+        if (changes.leaf_container_rotation) {
+            const leaf_container = document.getElementById(leaf_container_id);
+            leaf_container.style.transform = `rotate(${leaf_container_rotation}deg)`;
         }
     }
 });
+
+window.addEventListener("resize", rescale_and_position_leaf_container);
