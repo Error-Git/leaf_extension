@@ -4,9 +4,13 @@ const generate_leaves_toggle = document.getElementById("generate-leaves-toggle")
 const leaf_amount_input = document.getElementById("leaf-amount");
 
 function degrees_update_value(value) {
+    value = Number(value);
+
     degrees_slider_input.value = value;
     degrees_text_input.value = value;
-    chrome.storage.local.set({ leaf_container_rotation: value });
+    chrome.storage.local.set({
+        leaf_container_rotation: value
+    });
 }
 
 degrees_slider_input.oninput = function () {
@@ -18,11 +22,17 @@ degrees_text_input.oninput = function () {
 }
 
 leaf_amount_input.oninput = function () {
-    chrome.storage.local.set({ leaf_amount: this.value });
+    const value = Number(this.value);
+
+    chrome.storage.local.set({
+        leaf_amount: value
+    });
 }
 
 generate_leaves_toggle.addEventListener("change", () => {
-    chrome.storage.local.set({ leaves_enabled: generate_leaves_toggle.checked });
+    chrome.storage.local.set({
+        leaves_enabled: generate_leaves_toggle.checked
+    });
 });
 
 
