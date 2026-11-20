@@ -67,7 +67,7 @@ function initialize() {
 
             to {
                 top: 100%;
-                transform: translateX(-50%) rotate(40deg);
+                transform: translateX(-50%) rotate(70deg);
             }
         }
     `;
@@ -132,8 +132,14 @@ function generate_leaf(leaf_count, left_alignment, animation_duration) {
     leaf.alt = "";
 
     leaf.style.left = `${left_alignment}%`;
-    leaf.style.animationDuration = `${animation_duration}s`;
+    // leaf.style.animationDuration = `${animation_duration}s`;
+    leaf.style.animationDuration = `8s`;
     leaf.style.transform = "translateX(-50%)";
+
+    leaf.addEventListener("animationiteration", function () {
+        console.log(this.offsetWidth);
+        this.style.width = `${this.offsetWidth * 1.2}px`;
+    });
 
     const leaf_container = document.getElementById(leaf_container_id);
     leaf_container.appendChild(leaf);
